@@ -10,6 +10,7 @@ use Symfony\Component\HttpClient\HttpClient;
 class Core
 {
     public $client;
+    public $appBaseUrl;
     public $baseUrl;
     public $rawTitle;
     public $cleanTitle;
@@ -23,11 +24,40 @@ class Core
 
     public function __construct()
     {
+        $action = H::getVal($_GET, 'action');
+        $start = H::getVal($_GET, 'start');
+        $end = H::getVal($_GET, 'end');
+        $title = urldecode(H::getVal($_GET, 'title'));
+        $videourl = urldecode(H::getVal($_GET, 'url'));
+        $filename = urldecode(H::getVal($_GET, 'filename'));
+
+        $this->appBaseUrl = strtok((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]", '?');
         $this->baseUrl = 'https://www4.gogoanimehub.tv';
-        $this->rawTitle = 'NATSUNAGU!';
-        $this->episodeStart = 1;
-        $this->episodeEnd = 1;
+        $this->rawTitle = $title;
+        $this->episodeStart = $start;
+        $this->episodeEnd = $end;
         $this->client = new Client(HttpClient::create(['timeout' => 60]));
+
+        if (empty($action) and empty($title)) {
+            echo '<h2>GoGo<sup><em>search</em></sup>Anime</h2>';
+            echo '<form>
+                <label for="title">Anime title:</label>
+                <input type="text" id="title" name="title"><br><br>
+                <label for="start">From Episode:</label>
+                <input type="number" id="start" name="start"><br><br>
+                <label for="end">To episode:</label>
+                <input type="number" id="end" name="end"><br><br>
+                <input type="submit" value="Submit">
+                </form>';
+            exit;
+        }
+
+        if ($action == 'download' and !empty($videourl)) {
+            if (!$filename) {
+                pdd('Invalid video file name!');
+            }
+            $this->downloadVideo($videourl, $filename);
+        }
     }
 
     public function scrape()
@@ -80,6 +110,7 @@ class Core
 
     public function displayResult()
     {
+        echo "<h4><a href='{$this->appBaseUrl}'>Reset Search</a></h4>";
         echo "<h2><a target='_blank' href='{$this->animeUrl}'>{$this->rawTitle}</a></h2>";
         echo "<img style='height: 280px;' src='{$this->animeImageUrl}'>";
         foreach ($this->episodeList as $ep => $data) {
@@ -89,12 +120,28 @@ class Core
                 preg_match_all('/\{file\:(?:[^{}]|(?R))*\}/x', preg_replace('/\s+/', '', $getStream->html()), $matches);
                 foreach ($matches[0] as $mat) {
                     $mat = (new CJSON)->decode($mat);
-                    if (($video_url = H::getVal($mat, 'file')) and strpos($video_url, 'videoplayback')) {
-                        echo "<a target='_blank' href='{$video_url}'>Download from {$stream}</a></br>";
+                    if ($video_url = H::getVal($mat, 'file') and strpos($video_url, 'videoplayback')) {
+                        $data = array(
+                            'action' => 'download',
+                            'url' => $video_url,
+                            'filename' => $this->cleanTitle . ' ' . $ep. '.' .H::getVal($mat, 'type'),
+                        );
+
+                        $download_url = $this->appBaseUrl .  '?' . http_build_query($data);
+                        echo "<a target='_blank' href='{$download_url}'>Download from {$stream}</a></br>";
                         break;
                     }
                 }
             }
         }
+    }
+
+    public function downloadVideo($url, $filename)
+    {
+        header('Content-Type: application/octet-stream');
+        header("Content-Transfer-Encoding: Binary");
+        header("Content-disposition: attachment; filename=\"" . $filename . "\"");
+        readfile($url);
+        exit;
     }
 }
