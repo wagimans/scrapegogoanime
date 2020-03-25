@@ -1,0 +1,35 @@
+{
+    "name": "wagimans/scrapegogoanime",
+    "version": "0.1",
+    "type": "project",
+    "description": "GoGoAnime website scraper",
+    "keywords": [
+        "gogoanime",
+        "web scraper",
+        "anime",
+        "scraper",
+        "download"
+    ],
+    "homepage": "https://github.com/wagimans/scrapegogoanime",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Warisman Syam",
+            "email": "warismansyam@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "voku/simple_html_dom": "^4.7",
+        "symfony/dom-crawler": "^5.0",
+        "voku/portable-utf8": "^5.4",
+        "fabpot/goutte": "^4.0",
+        "symfony/panther": "^0.7.1"
+    },
+    "autoload": {
+        "classmap": [
+            "base",
+            "components"
+        ]
+    }
+}
