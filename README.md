@@ -1,0 +1,2 @@
+# scrapegogoanime
+GoGOAnime website scraper
