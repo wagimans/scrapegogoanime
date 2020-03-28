@@ -24,7 +24,8 @@
         "symfony/dom-crawler": "^5.0",
         "voku/portable-utf8": "^5.4",
         "fabpot/goutte": "^4.0",
-        "symfony/panther": "^0.7.1"
+        "symfony/panther": "^0.7.1",
+        "adhocore/cli": "^0.8.3"
     },
     "autoload": {
         "classmap": [
