@@ -74,17 +74,31 @@ class Shell
                 $this->cli->redBold("Invalid episode selected!");
                 exit;
             }
-            $selectedStreamUrl = H::getVal($core->streamListUrl, $stream, false);
+            $selectedstreamUrl = H::getVal($core->streamListUrl, $stream, false);
 
-            $this->cli->cyanBold(PHP_EOL . "Downloading video from {$selectedStreamUrl} . . . " . PHP_EOL, true);
+            $this->cli->greenBold(PHP_EOL . "Downloading video from {$selectedstream} . . . " . PHP_EOL, true);
+            $downloaded = $core->getStreamDataShell($selectedstreamUrl, $episode);
+            if (!$downloaded) {
+                $this->cli->redBold("Unable to download video!", true);
+            }
+
+            $this->cli->greenBold("Bye!");
+            exit;
         }
 
         $this->cli->comment("Selected episode : {$this->downloadEp}", true);
         $episodeList = $core->getAnimeDataShell();
 
-        $downloadEps = explode('-', $this->downloadEp);
-        $endDownloadEps = count($downloadEps) == 1 ? $downloadEps[0] : $downloadEps[1];
-        for ($i = $downloadEps[0]; $i <= $endDownloadEps; $i++) {
+        if ($this->downloadEp == 'all') {
+            $startDownloadEps = min(array_keys($episodeList));
+            $endDownloadEps = max(array_keys($episodeList));
+            $this->cli->comment("Total episodes : {$endDownloadEps}", true);
+        } else {
+            $downloadEps = explode('-', $this->downloadEp);
+            $startDownloadEps = $downloadEps[0];
+            $endDownloadEps = count($downloadEps) == 1 ? $startDownloadEps : $downloadEps[1];
+        }
+        for ($i = $startDownloadEps; $i <= $endDownloadEps; $i++) {
             $selectedEpurl = H::getVal($episodeList, $i, false);
             $streamList = $core->getEpisodeDataShell($selectedEpurl);
             if (empty($streamList)) {
@@ -97,7 +111,7 @@ class Shell
             if (!$downloaded) {
                 $this->cli->redBold("Unable to download video!", true);
             }
-            if (($endDownloadEps - $downloadEps[0]) > 5 and $i % 5 == 0) {
+            if (($endDownloadEps - $startDownloadEps) > 5 and $i % 5 == 0) {
                 $br = 120;
                 $this->cli->yellowBold("Break time for {$br} seconds...", true);
                 sleep($br);

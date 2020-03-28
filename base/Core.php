@@ -36,10 +36,15 @@ class Core
                 str_replace(' ', '-', $this->rawTitle)
             )
         );
+        $this->cleanTitle = str_replace('---', '-', $this->cleanTitle);
 
         $this->animeUrl = $this->baseUrl . '/category/' . $this->cleanTitle;
 
         $getAnime = $this->client->request('GET', $this->animeUrl);
+        if ($this->client->getResponse()->getStatusCode() != '200') {
+            echo "Invalid anime link [{$this->animeUrl}]";
+            exit;
+        }
         $this->animeId = H::extractNode($getAnime, 'input#movie_id', ['value']);
         $this->animeImageUrl = H::extractNode($getAnime, 'div.anime_info_body_bg > img', ['src']);
         $this->episodeStart = $this->episodeStart ? $this->episodeStart : $getAnime->filter('#episode_page a.active')->attr('ep_start');
