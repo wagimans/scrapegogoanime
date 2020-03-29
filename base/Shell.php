@@ -111,8 +111,8 @@ class Shell
             if (!$downloaded) {
                 $this->cli->redBold("Unable to download video!", true);
             }
-            if (($endDownloadEps - $startDownloadEps) > 5 and $i % 5 == 0) {
-                $br = 120;
+            if (($endDownloadEps - $startDownloadEps) > 5 and ($i % 5 == 0 and $i != 0)) {
+                $br = 180;
                 $this->cli->yellowBold("Break time for {$br} seconds...", true);
                 sleep($br);
             }

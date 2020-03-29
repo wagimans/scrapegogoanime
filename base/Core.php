@@ -29,14 +29,15 @@ class Core
     {
         $this->client = new Client(HttpClient::create(['timeout' => 60]));
 
+        // TODO : fix url parsing from title
         $this->cleanTitle = strtolower(
-            preg_replace(
-                "/[^A-Za-z0-9\-]/",
-                '',
-                str_replace(' ', '-', $this->rawTitle)
+            str_replace(' ', '-', preg_replace(
+                "/[^A-Za-z0-9]/",
+                '-',
+                $this->rawTitle)
             )
         );
-        $this->cleanTitle = str_replace('---', '-', $this->cleanTitle);
+        $this->cleanTitle = trim(preg_replace('/-+/', '-', $this->cleanTitle), '-');
 
         $this->animeUrl = $this->baseUrl . '/category/' . $this->cleanTitle;
 
@@ -87,6 +88,10 @@ class Core
                 $this->episodeList[$epName] = $epUrl;
             }
         });
+        if (empty($this->episodeList)) {
+            echo "Empty episode list [{$this->episodeListUrl}]";
+            exit;
+        }
         ksort($this->episodeList, SORT_NATURAL);
 
         return $this->episodeList;
